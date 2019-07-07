@@ -3,6 +3,7 @@ const webpack = require('webpack');
 const MomentLocalesPlugin = require('moment-locales-webpack-plugin');
 const pluginArray = [];
 const sourceMapType = 'source-map';
+const TerserPlugin = require('terser-webpack-plugin');
 
 /*if (process.env.NODE_ENV !== 'development') {
  console.log('Development environment detected, enabling Bundle Analyzer');
@@ -59,15 +60,30 @@ pluginArray.push(new MomentLocalesPlugin({
 module.exports = {
   context: path.resolve(__dirname, '.'),
   entry: {
-    app: './bundle/bundle.source.js'
+    app: './bundle/bundle.source.js',
+    clock: './bundle/bundle.clocks.source.js'
   },
   output: {
     path: path.resolve(__dirname, './tmp'),
     publicPath: '/',
-    filename: 'js/bundle.js',
-    sourceMapFilename: 'js/bundle.js.map',
+    filename: 'js/bundle.[name].js',
+    sourceMapFilename: 'js/bundle.[name].js.map',
   },
   devtool: sourceMapType,
+  optimization: {
+    minimizer: [
+      new TerserPlugin( {
+        cache: true,
+        parallel: true,
+        sourceMap: true, // Must be set to true if using source-maps in production
+        terserOptions: {
+          ie8: false,
+          safari10: false
+          // https://github.com/webpack-contrib/terser-webpack-plugin#terseroptions
+        }
+      } ),
+    ],
+  },
   plugins: pluginArray,
   module: {
     rules: [{
